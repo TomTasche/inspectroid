@@ -1,0 +1,3 @@
+[submodule "proxylight"]
+	path = proxylight
+	url = git@github.com:robocoder/proxylight.git
