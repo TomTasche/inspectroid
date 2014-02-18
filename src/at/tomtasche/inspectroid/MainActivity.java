@@ -4,17 +4,20 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.Switch;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnCheckedChangeListener {
 
 	private TextView requestsText;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		startService(new Intent(this, ProxyService.class));
 
 		setContentView(R.layout.activity_main);
 
@@ -36,5 +39,26 @@ public class MainActivity extends Activity {
 		requestDatabase.close();
 
 		requestDatabase.clear();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+
+		((Switch) menu.findItem(R.id.http_switch).getActionView())
+				.setOnCheckedChangeListener(this);
+
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		Intent intent = new Intent(this, ProxyService.class);
+		if (isChecked) {
+			stopService(intent);
+		} else {
+			startService(intent);
+		}
 	}
 }
