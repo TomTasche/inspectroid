@@ -20,7 +20,9 @@ public class MainActivity extends Activity {
 
 		requestsText = (TextView) findViewById(R.id.requestsText);
 
-		RequestDatabase requestDatabase = new RequestDatabase(this, false);
+		RequestDatabaseManager requestDatabase = new RequestDatabaseManager(
+				this);
+		requestDatabase.initialize(false);
 
 		Cursor requests = requestDatabase.getRequests();
 
@@ -32,5 +34,7 @@ public class MainActivity extends Activity {
 		}
 
 		requestDatabase.close();
+
+		requestDatabase.clear();
 	}
 }

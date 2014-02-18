@@ -19,14 +19,15 @@ public class ProxyService extends Service {
 	private int blockedRequests = 0;
 
 	private Handler handler;
-	private RequestDatabase requestDatabase;
+	private RequestDatabaseManager requestDatabase;
 	private NotificationManager notificationManager;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 
-		requestDatabase = new RequestDatabase(this, true);
+		requestDatabase = new RequestDatabaseManager(this);
+		requestDatabase.initialize(true);
 
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -74,8 +75,7 @@ public class ProxyService extends Service {
 
 		notificationManager.notify(notificationId, notification);
 
-		requestDatabase
-				.addRequest(request.getUrl(), System.currentTimeMillis());
+		requestDatabase.addRequest(request);
 	}
 
 	@Override
