@@ -5,9 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.mba.proxylight.ProxyLight;
 import com.mba.proxylight.Request;
@@ -21,22 +19,19 @@ public class ProxyService extends Service {
 
 	private ProxyLight proxy;
 
-	private Handler handler;
 	private RequestDatabaseManager requestDatabase;
 	private NotificationManager notificationManager;
+
+	private Notification notification;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
-		Log.e("smn", "ProxyService started");
 
 		requestDatabase = new RequestDatabaseManager(this);
 		requestDatabase.initialize(true);
 
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-		handler = new Handler();
 
 		try {
 			proxy = new ProxyLight();
@@ -47,13 +42,9 @@ public class ProxyService extends Service {
 				public boolean filter(final Request request) {
 					boolean filter = request.getPort() != 443;
 					if (filter) {
-						handler.post(new Runnable() {
+						updateNotification(request);
 
-							@Override
-							public void run() {
-								createNotification(request);
-							}
-						});
+						requestDatabase.addRequest(request);
 					}
 
 					return filter;
@@ -62,13 +53,11 @@ public class ProxyService extends Service {
 			proxy.start();
 		} catch (Exception e) {
 			e.printStackTrace();
-			
+
 			throw new RuntimeException(e.getMessage());
 		}
-	}
 
-	private void createNotification(Request request) {
-		Notification notification = new Notification();
+		notification = new Notification();
 		notification.icon = R.drawable.ic_launcher;
 		notification.number = ++blockedRequests;
 		notification.when = System.currentTimeMillis();
@@ -79,19 +68,21 @@ public class ProxyService extends Service {
 		notification.setLatestEventInfo(this, "insecure requests blocked",
 				"lots of insecure requests blocked! :)", pendingIntent);
 
-		notificationManager.notify(notificationId, notification);
+		startForeground(notificationId, notification);
+	}
 
-		requestDatabase.addRequest(request);
+	private void updateNotification(Request request) {
+		notification.number = ++blockedRequests;
+
+		notificationManager.notify(notificationId, notification);
 	}
 
 	@Override
 	public void onDestroy() {
 		requestDatabase.close();
-		
+
 		proxy.stop();
 
-		Log.e("smn", "ProxyService stopped");
-		
 		super.onDestroy();
 	}
 

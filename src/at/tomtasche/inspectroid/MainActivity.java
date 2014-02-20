@@ -1,6 +1,6 @@
 package at.tomtasche.inspectroid;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -8,37 +8,29 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Switch;
-import android.widget.TextView;
 
-public class MainActivity extends Activity implements OnCheckedChangeListener {
+public class MainActivity extends ListActivity implements
+		OnCheckedChangeListener {
 
-	private TextView requestsText;
+	private RequestDatabaseManager requestDatabase;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_main);
-
-		requestsText = (TextView) findViewById(R.id.requestsText);
-
-		RequestDatabaseManager requestDatabase = new RequestDatabaseManager(
-				this);
+		requestDatabase = new RequestDatabaseManager(this);
 		requestDatabase.initialize(false);
 
 		Cursor requests = requestDatabase.getRequests();
 
-		int urlColumnIndex = requests.getColumnIndex(RequestDatabaseHelper.URL);
-		while (requests.moveToNext()) {
-			String url = requests.getString(urlColumnIndex);
+		SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this,
+				android.R.layout.simple_list_item_1, requests,
+				new String[] { RequestDatabaseHelper.URL },
+				new int[] { android.R.id.text1 });
 
-			requestsText.append(url + System.getProperty("line.separator"));
-		}
-
-		requestDatabase.close();
-
-		requestDatabase.clear();
+		getListView().setAdapter(cursorAdapter);
 	}
 
 	@Override
@@ -60,5 +52,14 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
 		} else {
 			stopService(intent);
 		}
+	}
+
+	@Override
+	protected void onStop() {
+		requestDatabase.close();
+
+		requestDatabase.clear();
+
+		super.onStop();
 	}
 }
