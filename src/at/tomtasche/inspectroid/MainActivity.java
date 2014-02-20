@@ -56,9 +56,9 @@ public class MainActivity extends Activity implements OnCheckedChangeListener {
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		Intent intent = new Intent(this, ProxyService.class);
 		if (isChecked) {
-			stopService(intent);
-		} else {
 			startService(intent);
+		} else {
+			stopService(intent);
 		}
 	}
 }

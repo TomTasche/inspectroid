@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.mba.proxylight.ProxyLight;
 import com.mba.proxylight.Request;
@@ -18,6 +19,8 @@ public class ProxyService extends Service {
 
 	private int blockedRequests = 0;
 
+	private ProxyLight proxy;
+
 	private Handler handler;
 	private RequestDatabaseManager requestDatabase;
 	private NotificationManager notificationManager;
@@ -25,6 +28,8 @@ public class ProxyService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		
+		Log.e("smn", "ProxyService started");
 
 		requestDatabase = new RequestDatabaseManager(this);
 		requestDatabase.initialize(true);
@@ -34,9 +39,9 @@ public class ProxyService extends Service {
 		handler = new Handler();
 
 		try {
-			ProxyLight p = new ProxyLight();
-			p.setPort(8080);
-			p.getRequestFilters().add(new RequestFilter() {
+			proxy = new ProxyLight();
+			proxy.setPort(8080);
+			proxy.getRequestFilters().add(new RequestFilter() {
 
 				@Override
 				public boolean filter(final Request request) {
@@ -54,10 +59,11 @@ public class ProxyService extends Service {
 					return filter;
 				}
 			});
-			p.start();
+			proxy.start();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			
+			throw new RuntimeException(e.getMessage());
 		}
 	}
 
@@ -80,9 +86,13 @@ public class ProxyService extends Service {
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
-
 		requestDatabase.close();
+		
+		proxy.stop();
+
+		Log.e("smn", "ProxyService stopped");
+		
+		super.onDestroy();
 	}
 
 	@Override
