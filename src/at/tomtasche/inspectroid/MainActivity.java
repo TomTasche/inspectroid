@@ -86,9 +86,8 @@ public class MainActivity extends ListActivity implements
 
 	@Override
 	protected void onStop() {
-		requestDatabase.close();
-
 		requestDatabase.clear();
+		requestDatabase.close();
 
 		super.onStop();
 	}

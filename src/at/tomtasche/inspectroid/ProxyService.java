@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 
 import com.mba.proxylight.ProxyLight;
@@ -24,6 +25,8 @@ public class ProxyService extends Service {
 	private RequestDatabaseManager requestDatabase;
 	private NotificationManager notificationManager;
 
+	private Handler handler;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -32,6 +35,8 @@ public class ProxyService extends Service {
 		requestDatabase.initialize(true);
 
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		handler = new Handler();
 
 		try {
 			proxy = new ProxyLight();
@@ -42,9 +47,16 @@ public class ProxyService extends Service {
 				public boolean filter(final Request request) {
 					boolean filter = request.getPort() != 443;
 					if (filter) {
-						updateNotification(request);
+						// TODO: use messages instead
+						handler.post(new Runnable() {
 
-						requestDatabase.addRequest(request);
+							@Override
+							public void run() {
+								updateNotification(request);
+
+								requestDatabase.addRequest(request);
+							}
+						});
 					}
 
 					return filter;

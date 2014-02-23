@@ -54,7 +54,7 @@ public class RequestDatabaseManager {
 	}
 
 	public void clear() {
-		// TODO: implement
+		database.delete(RequestDatabaseHelper.TABLE_NAME, null, null);
 	}
 
 	public void close() {
