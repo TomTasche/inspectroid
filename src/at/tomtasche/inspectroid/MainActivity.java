@@ -1,15 +1,20 @@
 package at.tomtasche.inspectroid;
 
+import java.util.Date;
+
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.SimpleCursorAdapter;
+import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.Switch;
+import android.widget.TextView;
 
 public class MainActivity extends ListActivity implements
 		OnCheckedChangeListener {
@@ -29,6 +34,29 @@ public class MainActivity extends ListActivity implements
 				new String[] { RequestDatabaseHelper.URL,
 						RequestDatabaseHelper.WHEN }, new int[] {
 						android.R.id.text1, android.R.id.text2 });
+
+		final int whenColumnIndex = requests
+				.getColumnIndex(RequestDatabaseHelper.WHEN);
+
+		cursorAdapter.setViewBinder(new ViewBinder() {
+
+			@Override
+			public boolean setViewValue(View view, Cursor cursor,
+					int columnIndex) {
+				if (columnIndex == whenColumnIndex) {
+					long when = cursor.getLong(whenColumnIndex);
+					// TODO: this is probably very inefficient
+					Date date = new Date(when);
+
+					TextView textView = (TextView) view;
+					textView.setText(date.toString());
+
+					return true;
+				}
+
+				return false;
+			}
+		});
 
 		getListView().setAdapter(cursorAdapter);
 	}
