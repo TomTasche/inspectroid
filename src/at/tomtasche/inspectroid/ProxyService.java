@@ -6,12 +6,15 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.mba.proxylight.ProxyLight;
 import com.mba.proxylight.Request;
 import com.mba.proxylight.RequestFilter;
 
 public class ProxyService extends Service {
+
+	protected static boolean running;
 
 	private static final int notificationId = 1993;
 
@@ -21,8 +24,6 @@ public class ProxyService extends Service {
 
 	private RequestDatabaseManager requestDatabase;
 	private NotificationManager notificationManager;
-
-	private Notification notification;
 
 	@Override
 	public void onCreate() {
@@ -57,7 +58,24 @@ public class ProxyService extends Service {
 			throw new RuntimeException(e.getMessage());
 		}
 
-		notification = new Notification();
+		Notification notification = new Notification();
+		notification.icon = R.drawable.ic_launcher;
+		notification.when = System.currentTimeMillis();
+
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+				new Intent(this, MainActivity.class), 0);
+
+		notification.setLatestEventInfo(this, "waiting for connections",
+				"proxy waiting for connections at localhost:8080",
+				pendingIntent);
+
+		startForeground(notificationId, notification);
+
+		running = true;
+	}
+
+	private void updateNotification(Request request) {
+		Notification notification = new Notification();
 		notification.icon = R.drawable.ic_launcher;
 		notification.number = ++blockedRequests;
 		notification.when = System.currentTimeMillis();
@@ -68,17 +86,13 @@ public class ProxyService extends Service {
 		notification.setLatestEventInfo(this, "insecure requests blocked",
 				"lots of insecure requests blocked! :)", pendingIntent);
 
-		startForeground(notificationId, notification);
-	}
-
-	private void updateNotification(Request request) {
-		notification.number = ++blockedRequests;
-
 		notificationManager.notify(notificationId, notification);
 	}
 
 	@Override
 	public void onDestroy() {
+		running = false;
+
 		requestDatabase.close();
 
 		proxy.stop();

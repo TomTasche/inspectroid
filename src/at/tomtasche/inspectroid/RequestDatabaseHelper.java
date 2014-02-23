@@ -10,8 +10,9 @@ public class RequestDatabaseHelper extends SQLiteOpenHelper {
 	public static final String TABLE_NAME = "request";
 	public static final String URL = "url";
 	public static final String WHEN = "time";
-	private static final String TABLE_CREATE = "CREATE TABLE "
-			+ TABLE_NAME + " (" + URL + " TEXT, " + WHEN + " LONG);";
+	private static final String TABLE_CREATE = "CREATE TABLE " + TABLE_NAME
+			+ " (_id INTEGER PRIMARY KEY AUTOINCREMENT, " + URL + " TEXT, "
+			+ WHEN + " LONG);";
 
 	public RequestDatabaseHelper(Context context) {
 		super(context, "requests", null, DATABASE_VERSION);

@@ -24,11 +24,11 @@ public class MainActivity extends ListActivity implements
 		requestDatabase.initialize(false);
 
 		Cursor requests = requestDatabase.getRequests();
-
 		SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_list_item_1, requests,
-				new String[] { RequestDatabaseHelper.URL },
-				new int[] { android.R.id.text1 });
+				android.R.layout.simple_list_item_2, requests,
+				new String[] { RequestDatabaseHelper.URL,
+						RequestDatabaseHelper.WHEN }, new int[] {
+						android.R.id.text1, android.R.id.text2 });
 
 		getListView().setAdapter(cursorAdapter);
 	}
@@ -38,8 +38,10 @@ public class MainActivity extends ListActivity implements
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
 
-		((Switch) menu.findItem(R.id.http_switch).getActionView())
-				.setOnCheckedChangeListener(this);
+		Switch proxySwitch = (Switch) menu.findItem(R.id.http_switch)
+				.getActionView();
+		proxySwitch.setChecked(ProxyService.running);
+		proxySwitch.setOnCheckedChangeListener(this);
 
 		return super.onCreateOptionsMenu(menu);
 	}
