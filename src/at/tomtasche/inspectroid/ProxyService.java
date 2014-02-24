@@ -15,6 +15,7 @@ import com.mba.proxylight.RequestFilter;
 public class ProxyService extends Service {
 
 	protected static boolean running;
+	protected static boolean filtering;
 
 	private static final int notificationId = 1993;
 
@@ -47,14 +48,20 @@ public class ProxyService extends Service {
 				public boolean filter(final Request request) {
 					boolean filter = request.getPort() != 443;
 					if (filter) {
+						requestDatabase.addRequest(request);
+					}
+
+					if (!filtering) {
+						return false;
+					}
+
+					if (filter) {
 						// TODO: use messages instead
 						handler.post(new Runnable() {
 
 							@Override
 							public void run() {
 								updateNotification(request);
-
-								requestDatabase.addRequest(request);
 							}
 						});
 					}

@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -66,12 +67,44 @@ public class MainActivity extends ListActivity implements
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
 
-		Switch proxySwitch = (Switch) menu.findItem(R.id.http_switch)
+		Switch proxySwitch = (Switch) menu.findItem(R.id.proxy_switch)
 				.getActionView();
 		proxySwitch.setChecked(ProxyService.running);
 		proxySwitch.setOnCheckedChangeListener(this);
 
+		MenuItem httpItem = menu.findItem(R.id.http_toggle);
+		toggleHttpItemText(httpItem);
+
 		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.http_toggle:
+			ProxyService.filtering = !ProxyService.filtering;
+
+			toggleHttpItemText(item);
+
+			return true;
+		}
+
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void toggleHttpItemText(MenuItem httpItem) {
+		String title;
+		String titleCondensed;
+		if (ProxyService.filtering) {
+			title = "Blocking HTTP";
+			titleCondensed = "Blocking";
+		} else {
+			title = "Not blocking HTTP";
+			titleCondensed = "Not blocking";
+		}
+
+		httpItem.setTitle(title);
+		httpItem.setTitleCondensed(titleCondensed);
 	}
 
 	@Override

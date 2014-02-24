@@ -54,7 +54,9 @@ public class RequestDatabaseManager {
 	}
 
 	public void clear() {
-		database.delete(RequestDatabaseHelper.TABLE_NAME, null, null);
+		if (database.isOpen()) {
+			database.delete(RequestDatabaseHelper.TABLE_NAME, null, null);
+		}
 	}
 
 	public void close() {
