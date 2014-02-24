@@ -77,7 +77,7 @@ public class ProxyService extends Service {
 		}
 
 		Notification notification = new Notification();
-		notification.icon = R.drawable.ic_launcher;
+		notification.icon = R.drawable.ic_notification;
 		notification.when = System.currentTimeMillis();
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
