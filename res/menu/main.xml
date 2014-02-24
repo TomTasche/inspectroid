@@ -3,9 +3,8 @@
 
     <item
         android:id="@+id/http_toggle"
-        android:showAsAction="always|withText">
+        android:showAsAction="always">
     </item>
-    
     <item
         android:id="@+id/proxy_switch"
         android:actionViewClass="android.widget.Switch"
