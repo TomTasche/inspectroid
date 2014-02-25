@@ -26,6 +26,16 @@ public class MainActivity extends ListActivity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		setContentView(R.layout.empty_list);
+
+		TextView textView = (TextView) findViewById(android.R.id.empty);
+		textView.setText("proxy is listening on localhost:8080. read about setting a proxy in android here: http://www.android-proxy.com/2012/04/whats-taste-of-ice-cream-on-my-sandwich.html");
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+
 		requestDatabase = new RequestDatabaseManager(this);
 		requestDatabase.initialize(false);
 
@@ -119,7 +129,6 @@ public class MainActivity extends ListActivity implements
 
 	@Override
 	protected void onStop() {
-		requestDatabase.clear();
 		requestDatabase.close();
 
 		super.onStop();
