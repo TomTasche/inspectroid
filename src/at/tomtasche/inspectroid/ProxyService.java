@@ -94,7 +94,7 @@ public class ProxyService extends Service {
 
 	private void updateNotification(Request request) {
 		Notification notification = new Notification();
-		notification.icon = R.drawable.ic_launcher;
+		notification.icon = R.drawable.ic_notification;
 		notification.number = ++blockedRequests;
 		notification.when = System.currentTimeMillis();
 
