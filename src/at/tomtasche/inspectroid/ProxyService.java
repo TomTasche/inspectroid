@@ -4,7 +4,9 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 
@@ -14,10 +16,11 @@ import com.mba.proxylight.RequestFilter;
 
 public class ProxyService extends Service {
 
+	public static final String PREFERENCE_BLOCK_HTTP = "block_http";
+
 	private static final int RESTART_INTERVAL = 24 * 60 * 60 * 1000;
 
 	protected static boolean running;
-	protected static boolean filtering;
 
 	private static final int notificationId = 1993;
 
@@ -31,6 +34,10 @@ public class ProxyService extends Service {
 
 	private Handler handler;
 
+	private SharedPreferences preferences;
+
+	private boolean blockHttp;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -41,6 +48,9 @@ public class ProxyService extends Service {
 		requestDatabase.initialize(true);
 
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+		preferences = getSharedPreferences("proxyboxy", Context.MODE_PRIVATE);
+		refreshSettings();
 
 		handler = new Handler();
 
@@ -60,6 +70,10 @@ public class ProxyService extends Service {
 		restartProxy();
 
 		running = true;
+	}
+
+	private void refreshSettings() {
+		blockHttp = preferences.getBoolean(PREFERENCE_BLOCK_HTTP, true);
 	}
 
 	private void restartProxy() {
@@ -92,7 +106,7 @@ public class ProxyService extends Service {
 						});
 					}
 
-					return filter;
+					return filter && blockHttp;
 				}
 			});
 			proxy.start();
@@ -120,7 +134,7 @@ public class ProxyService extends Service {
 
 		String title;
 		String message;
-		if (filtering) {
+		if (blockHttp) {
 			title = "insecure requests blocked";
 			message = "lots of insecure requests blocked! :)";
 		} else {
@@ -140,6 +154,8 @@ public class ProxyService extends Service {
 		stopProxy();
 
 		requestDatabase.close();
+
+		stopForeground(true);
 
 		super.onDestroy();
 	}

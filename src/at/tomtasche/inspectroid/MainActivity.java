@@ -7,6 +7,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.Menu;
@@ -30,6 +32,7 @@ public class MainActivity extends ListActivity implements
 
 	private RequestDatabaseManager requestDatabase;
 	private SimpleCursorAdapter cursorAdapter;
+	private SharedPreferences preferences;
 	private ClipboardManager clipboard;
 
 	@Override
@@ -46,6 +49,8 @@ public class MainActivity extends ListActivity implements
 
 		TextView textView = (TextView) findViewById(android.R.id.empty);
 		textView.setText("proxy is listening on localhost:8080. read about setting a proxy in android here: http://www.android-proxy.com/2012/04/whats-taste-of-ice-cream-on-my-sandwich.html");
+
+		preferences = getSharedPreferences("proxyboxy", Context.MODE_PRIVATE);
 
 		clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 	}
@@ -110,7 +115,11 @@ public class MainActivity extends ListActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.http_toggle:
-			ProxyService.filtering = !ProxyService.filtering;
+			boolean blockHttp = isBlockingHttp();
+
+			Editor editor = preferences.edit();
+			editor.putBoolean(ProxyService.PREFERENCE_BLOCK_HTTP, !blockHttp);
+			editor.apply();
 
 			toggleHttpItemText(item);
 
@@ -120,10 +129,14 @@ public class MainActivity extends ListActivity implements
 		return super.onOptionsItemSelected(item);
 	}
 
+	private boolean isBlockingHttp() {
+		return preferences.getBoolean(ProxyService.PREFERENCE_BLOCK_HTTP, true);
+	}
+
 	private void toggleHttpItemText(MenuItem httpItem) {
 		String title;
 		String titleCondensed;
-		if (ProxyService.filtering) {
+		if (isBlockingHttp()) {
 			title = "Blocking HTTP";
 			titleCondensed = "Blocking";
 		} else {
