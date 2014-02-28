@@ -3,6 +3,9 @@ package at.tomtasche.inspectroid;
 import java.util.Date;
 
 import android.app.ListActivity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -12,24 +15,39 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.crittercism.app.Crittercism;
+import com.crittercism.app.CrittercismConfig;
 
 public class MainActivity extends ListActivity implements
 		OnCheckedChangeListener {
 
 	private RequestDatabaseManager requestDatabase;
+	private SimpleCursorAdapter cursorAdapter;
+	private ClipboardManager clipboard;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		CrittercismConfig config = new CrittercismConfig();
+		config.setLogcatReportingEnabled(true);
+
+		Crittercism.initialize(getApplicationContext(),
+				"5310dfdea6d3d76f6b000001", config);
+
 		setContentView(R.layout.empty_list);
 
 		TextView textView = (TextView) findViewById(android.R.id.empty);
 		textView.setText("proxy is listening on localhost:8080. read about setting a proxy in android here: http://www.android-proxy.com/2012/04/whats-taste-of-ice-cream-on-my-sandwich.html");
+
+		clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 	}
 
 	@Override
@@ -40,7 +58,7 @@ public class MainActivity extends ListActivity implements
 		requestDatabase.initialize(false);
 
 		Cursor requests = requestDatabase.getRequests();
-		SimpleCursorAdapter cursorAdapter = new SimpleCursorAdapter(this,
+		cursorAdapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_2, requests,
 				new String[] { RequestDatabaseHelper.URL,
 						RequestDatabaseHelper.WHEN }, new int[] {
@@ -125,6 +143,21 @@ public class MainActivity extends ListActivity implements
 		} else {
 			stopService(intent);
 		}
+	}
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		Cursor cursor = (Cursor) cursorAdapter.getItem(position);
+		String url = cursor.getString(cursor
+				.getColumnIndex(RequestDatabaseHelper.URL));
+
+		ClipData clip = ClipData.newPlainText("inspectroid: HTTP URL", url);
+		clipboard.setPrimaryClip(clip);
+
+		Toast.makeText(this, "URL copied to clipboard", Toast.LENGTH_SHORT)
+				.show();
+
+		super.onListItemClick(l, v, position, id);
 	}
 
 	@Override

@@ -47,15 +47,10 @@ public class ProxyService extends Service {
 				@Override
 				public boolean filter(final Request request) {
 					boolean filter = request.getPort() != 443;
+
 					if (filter) {
 						requestDatabase.addRequest(request);
-					}
 
-					if (!filtering) {
-						return false;
-					}
-
-					if (filter) {
 						// TODO: use messages instead
 						handler.post(new Runnable() {
 
@@ -94,15 +89,24 @@ public class ProxyService extends Service {
 
 	private void updateNotification(Request request) {
 		Notification notification = new Notification();
-		notification.icon = R.drawable.ic_launcher;
+		notification.icon = R.drawable.ic_notification;
 		notification.number = ++blockedRequests;
 		notification.when = System.currentTimeMillis();
 
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
 				new Intent(this, MainActivity.class), 0);
 
-		notification.setLatestEventInfo(this, "insecure requests blocked",
-				"lots of insecure requests blocked! :)", pendingIntent);
+		String title;
+		String message;
+		if (filtering) {
+			title = "insecure requests blocked";
+			message = "lots of insecure requests blocked! :)";
+		} else {
+			title = "logging insecure requests";
+			message = "not blocking any requests currently";
+		}
+
+		notification.setLatestEventInfo(this, title, message, pendingIntent);
 
 		notificationManager.notify(notificationId, notification);
 	}
