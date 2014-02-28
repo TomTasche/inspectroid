@@ -127,8 +127,8 @@ public class MainActivity extends ListActivity implements
 			title = "Blocking HTTP";
 			titleCondensed = "Blocking";
 		} else {
-			title = "Not blocking HTTP";
-			titleCondensed = "Not blocking";
+			title = "Only logging HTTP";
+			titleCondensed = "Only logging";
 		}
 
 		httpItem.setTitle(title);
