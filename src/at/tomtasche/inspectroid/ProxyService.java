@@ -14,6 +14,8 @@ import com.mba.proxylight.RequestFilter;
 
 public class ProxyService extends Service {
 
+	private static final int RESTART_INTERVAL = 24 * 60 * 60 * 1000;
+
 	protected static boolean running;
 	protected static boolean filtering;
 
@@ -22,6 +24,7 @@ public class ProxyService extends Service {
 	private int blockedRequests = 0;
 
 	private ProxyLight proxy;
+	private RestartProxyRunnable restartRunnable;
 
 	private RequestDatabaseManager requestDatabase;
 	private NotificationManager notificationManager;
@@ -32,6 +35,8 @@ public class ProxyService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
+		restartRunnable = new RestartProxyRunnable();
+
 		requestDatabase = new RequestDatabaseManager(this);
 		requestDatabase.initialize(true);
 
@@ -39,6 +44,32 @@ public class ProxyService extends Service {
 
 		handler = new Handler();
 
+		Notification notification = new Notification();
+		notification.icon = R.drawable.ic_notification;
+		notification.when = System.currentTimeMillis();
+
+		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+				new Intent(this, MainActivity.class), 0);
+
+		notification.setLatestEventInfo(this, "waiting for connections",
+				"proxy waiting for connections at localhost:8080",
+				pendingIntent);
+
+		startForeground(notificationId, notification);
+
+		restartProxy();
+
+		running = true;
+	}
+
+	private void restartProxy() {
+		stopProxy();
+		startProxy();
+
+		handler.postDelayed(restartRunnable, RESTART_INTERVAL);
+	}
+
+	private void startProxy() {
 		try {
 			proxy = new ProxyLight();
 			proxy.setPort(8080);
@@ -70,21 +101,12 @@ public class ProxyService extends Service {
 
 			throw new RuntimeException(e.getMessage());
 		}
+	}
 
-		Notification notification = new Notification();
-		notification.icon = R.drawable.ic_notification;
-		notification.when = System.currentTimeMillis();
-
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
-				new Intent(this, MainActivity.class), 0);
-
-		notification.setLatestEventInfo(this, "waiting for connections",
-				"proxy waiting for connections at localhost:8080",
-				pendingIntent);
-
-		startForeground(notificationId, notification);
-
-		running = true;
+	private void stopProxy() {
+		if (proxy != null) {
+			proxy.stop();
+		}
 	}
 
 	private void updateNotification(Request request) {
@@ -115,9 +137,9 @@ public class ProxyService extends Service {
 	public void onDestroy() {
 		running = false;
 
-		requestDatabase.close();
+		stopProxy();
 
-		proxy.stop();
+		requestDatabase.close();
 
 		super.onDestroy();
 	}
@@ -125,5 +147,13 @@ public class ProxyService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
+	}
+
+	private class RestartProxyRunnable implements Runnable {
+
+		@Override
+		public void run() {
+			restartProxy();
+		}
 	}
 }
