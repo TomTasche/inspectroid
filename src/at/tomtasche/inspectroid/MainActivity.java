@@ -102,7 +102,7 @@ public class MainActivity extends ListActivity implements
 
 		Switch proxySwitch = (Switch) menu.findItem(R.id.proxy_switch)
 				.getActionView();
-		proxySwitch.setChecked(ProxyService.running);
+		proxySwitch.setChecked(isEnabled());
 		proxySwitch.setOnCheckedChangeListener(this);
 
 		MenuItem httpItem = menu.findItem(R.id.http_toggle);
@@ -133,6 +133,10 @@ public class MainActivity extends ListActivity implements
 		return preferences.getBoolean(ProxyService.PREFERENCE_BLOCK_HTTP, true);
 	}
 
+	private boolean isEnabled() {
+		return preferences.getBoolean(ProxyService.PREFERENCE_ENABLED, true);
+	}
+
 	private void toggleHttpItemText(MenuItem httpItem) {
 		String title;
 		String titleCondensed;
@@ -156,6 +160,10 @@ public class MainActivity extends ListActivity implements
 		} else {
 			stopService(intent);
 		}
+
+		Editor editor = preferences.edit();
+		editor.putBoolean(ProxyService.PREFERENCE_ENABLED, isChecked);
+		editor.apply();
 	}
 
 	@Override

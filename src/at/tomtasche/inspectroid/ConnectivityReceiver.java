@@ -17,7 +17,7 @@ public class ConnectivityReceiver extends BroadcastReceiver {
 
 		SharedPreferences preferences = context.getSharedPreferences(
 				"proxyboxy", Context.MODE_PRIVATE);
-		boolean enabled = preferences.getBoolean("proxy", true);
+		boolean enabled = preferences.getBoolean(ProxyService.PREFERENCE_ENABLED, true);
 		if (!enabled) {
 			return;
 		}

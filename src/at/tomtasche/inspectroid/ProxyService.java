@@ -17,10 +17,9 @@ import com.mba.proxylight.RequestFilter;
 public class ProxyService extends Service {
 
 	public static final String PREFERENCE_BLOCK_HTTP = "block_http";
+	public static final String PREFERENCE_ENABLED = "enable";
 
 	private static final int RESTART_INTERVAL = 24 * 60 * 60 * 1000;
-
-	protected static boolean running;
 
 	private static final int notificationId = 1993;
 
@@ -68,8 +67,6 @@ public class ProxyService extends Service {
 		startForeground(notificationId, notification);
 
 		restartProxy();
-
-		running = true;
 	}
 
 	private void refreshSettings() {
@@ -149,8 +146,6 @@ public class ProxyService extends Service {
 
 	@Override
 	public void onDestroy() {
-		running = false;
-
 		stopProxy();
 
 		requestDatabase.close();
